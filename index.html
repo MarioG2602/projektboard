@@ -88,6 +88,10 @@
       .task-move-actions,.order-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.task-move-actions .btn,.order-actions .btn{min-width:0;padding:8px}
       dialog{width:100%;max-width:none;max-height:90dvh;margin:auto 0 0;border-radius:20px 20px 0 0;border-bottom:0}.modal-body{max-height:calc(90dvh - 132px);overflow:auto;padding:14px}.modal-head,.modal-foot{padding:12px 14px}.modal-foot{position:sticky;bottom:0;background:#202329;padding-bottom:max(12px,env(safe-area-inset-bottom));flex-wrap:wrap}.modal-foot .btn{flex:1}
     }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+      .btn:hover,.icon-btn:hover,.task:hover,.floating-add:active{transform:none}
+    }
   </style>
 </head>
 <body>
@@ -162,16 +166,18 @@
     <div class="modal-foot"><button type="button" class="btn" id="signupBtn">Neues Konto erstellen</button><button class="btn primary">Anmelden</button></div>
   </form>
 </dialog>
-<div class="toast" id="toast"><span id="toastText"></span><button id="toastAction" hidden>Rückgängig</button></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText"></span><button id="toastAction" hidden>Rückgängig</button></div>
+<script src="./data-core.js"></script>
 <script>
-const KEY="projektboard.v1", CLOUD_KEY="projektboard.cloud.session", DIRTY_KEY="projektboard.cloud.dirty", SAFETY_KEY="projektboard.safety.snapshots", SUPABASE_URL="https://ytftfejvdjcehioqyeik.supabase.co", SUPABASE_KEY="sb_publishable_pyQ3eNqViwwHepevRwtTqQ_aUNIbLHC"; const $=s=>document.querySelector(s); const uid=()=>crypto.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);
+const KEY="projektboard.v1", CLOUD_KEY="projektboard.cloud.session", DIRTY_KEY="projektboard.cloud.dirty", SAFETY_KEY="projektboard.safety.snapshots", SUPABASE_URL="https://ytftfejvdjcehioqyeik.supabase.co", SUPABASE_KEY="sb_publishable_pyQ3eNqViwwHepevRwtTqQ_aUNIbLHC"; const $=s=>document.querySelector(s); const uid=()=>crypto.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);const validateBoard=(data)=>ProjectboardData.validateState(data,seed);
 const seed={active:null,projects:[{id:uid(),name:"Website Relaunch",description:"Planung und Umsetzung der neuen Website.",goal:"Projektziel: Erste veröffentlichbare Version fertigstellen.",columns:[{id:uid(),name:"Ideen",done:false},{id:uid(),name:"Noch zu erledigen",done:false},{id:uid(),name:"In Arbeit",done:false},{id:uid(),name:"Erledigt",done:true}],tasks:[]},{id:uid(),name:"Persönlich",description:"Private Aufgaben und Ideen.",goal:"Kleine Schritte, klarer Kopf.",columns:[{id:uid(),name:"Inbox",done:false},{id:uid(),name:"Diese Woche",done:false},{id:uid(),name:"Erledigt",done:true}],tasks:[]}]}; seed.active=seed.projects[0].id;
 seed.projects[0].tasks=[{id:uid(),title:"Inhalte der Startseite strukturieren",description:"",columnId:seed.projects[0].columns[1].id,priority:"high",due:"",label:"Konzept"},{id:uid(),title:"Farben und Typografie festlegen",description:"",columnId:seed.projects[0].columns[2].id,priority:"normal",due:"",label:"Design"},{id:uid(),title:"Hosting vergleichen",description:"",columnId:seed.projects[0].columns[0].id,priority:"low",due:"",label:"Idee"}];
  let state=load(), query="", filters={priority:"",label:"",due:""}, draggedTask=null, draggedColumn=null, draggedProject=null, projectDragMoved=false, lastUndoId=null, mobileColumnId=null, syncHandle=null, syncLastModified=0, syncWriteTimer=null, syncWriting=false, syncDirty=false;
 let cloudSession=loadCloudSession(), cloudDirty=localStorage.getItem(DIRTY_KEY)==="1", cloudTimer=null, cloudWriting=false, cloudLastUpdated="", cloudRevision=null, cloudHasRow=false, cloudConflict=false, cloudChangeId=0, cloudRetryStep=0;
-function normalizeState(data){data.trash=Array.isArray(data.trash)?data.trash:[];for(const p of data?.projects||[]){for(const c of p.columns||[]){p.tasks.filter(t=>t.columnId===c.id).sort((a,b)=>Number.isFinite(a.order)&&Number.isFinite(b.order)?a.order-b.order:p.tasks.indexOf(a)-p.tasks.indexOf(b)).forEach((t,i)=>t.order=(i+1)*1000)}}return data}
-function load(){try{const v=JSON.parse(localStorage.getItem(KEY));return normalizeState(v?.projects?.length?v:structuredClone(seed))}catch{return normalizeState(structuredClone(seed))}}
-function safetySnapshot(reason){try{const snapshots=JSON.parse(localStorage.getItem(SAFETY_KEY)||"[]"),entry={saved_at:new Date().toISOString(),reason,state:structuredClone(state)};snapshots.unshift(entry);localStorage.setItem(SAFETY_KEY,JSON.stringify(snapshots.slice(0,5)))}catch{}}
+function normalizeState(data){return validateBoard(data).state}
+function load(){try{const raw=localStorage.getItem(KEY),result=validateBoard(raw?JSON.parse(raw):structuredClone(seed));if(result.report.length)localStorage.setItem("projektboard.integrity.report",JSON.stringify({at:new Date().toISOString(),messages:result.report}));return result.state}catch{return validateBoard(structuredClone(seed)).state}}
+function safetySnapshotState(reason,snapshotState){try{const snapshots=JSON.parse(localStorage.getItem(SAFETY_KEY)||"[]"),entry={saved_at:new Date().toISOString(),reason,state:normalizeState(structuredClone(snapshotState))};snapshots.unshift(entry);localStorage.setItem(SAFETY_KEY,JSON.stringify(snapshots.slice(0,5)))}catch{}}
+function safetySnapshot(reason){safetySnapshotState(reason,state)}
 function safetySnapshots(){try{return JSON.parse(localStorage.getItem(SAFETY_KEY)||"[]")}catch{return[]}}
 function updateSafetyInfo(){const latest=safetySnapshots()[0];$("#restoreSafetyBtn").hidden=!latest;$("#safetyInfo").textContent=latest?`Letzte automatische Sicherung: ${new Date(latest.saved_at).toLocaleString("de-DE")} · ${latest.reason}`:"Noch kein automatischer Sicherheitsstand vorhanden."}
 function restoreLatestSafety(){const latest=safetySnapshots()[0];if(!latest||!confirm("Den letzten automatischen Sicherheitsstand wiederherstellen? Der aktuelle Stand wird vorher ebenfalls gesichert."))return;safetySnapshot("Vor Wiederherstellung");state=normalizeState(structuredClone(latest.state));save();render();closeAll();toast("Sicherheitsstand wiederhergestellt")}
@@ -227,9 +233,9 @@ async function pushCloud(){
 }
 async function resolveCloudConflict(){
  if(!cloudConflict)return;
- const useCloud=confirm("Windows und Mac haben gleichzeitig Änderungen gespeichert.\n\nOK: Cloud-Stand laden\nAbbrechen: Diesen lokalen Stand in die Cloud schreiben\n\nEine lokale Sicherung wurde automatisch gespeichert.");
+ const useCloud=confirm("Mehrere Geräte haben gleichzeitig Änderungen gespeichert.\n\nOK: Cloud-Stand laden\nAbbrechen: Lokalen Stand übernehmen\n\nBeide Versionen werden vorher automatisch gesichert.");
  if(useCloud){await pullCloud(false,true);return}
- try{const rows=await cloudRequest(`/rest/v1/projectboard_data?select=revision&user_id=eq.${cloudSession.user.id}`);cloudRevision=rows?.[0]?.revision||null;cloudConflict=false;cloudDirty=true;cloudChangeId++;await pushCloud();if(!cloudConflict)toast("Lokaler Stand wurde übernommen")}catch{setSyncStatus("Konflikt konnte nicht gelöst werden","error")}
+ try{const rows=await cloudRequest(`/rest/v1/projectboard_data?select=board_data,revision,updated_at&user_id=eq.${cloudSession.user.id}`),remote=rows?.[0];if(remote?.board_data)safetySnapshotState("Cloud-Stand vor Konfliktüberschreibung",remote.board_data);safetySnapshot("Lokaler Stand vor Konfliktüberschreibung");cloudRevision=remote?.revision||null;cloudConflict=false;cloudDirty=true;cloudChangeId++;await pushCloud();if(!cloudConflict)toast("Lokaler Stand übernommen; beide Versionen wurden gesichert")}catch{setSyncStatus("Konflikt konnte nicht gelöst werden","error")}
 }
 async function restoreCloud(){if(!cloudSession?.access_token)return;setSyncStatus("Cloud wird verbunden ...","wait");try{const data=await cloudRequest("/auth/v1/user");cloudSession.user=data;storeCloudSession(cloudSession);if(cloudDirty){cloudConflict=true;localStorage.setItem("projektboard.conflict.backup",JSON.stringify({saved_at:new Date().toISOString(),state}));setSyncStatus("Ungesendete Änderungen - bitte synchronisieren","error")}else await pullCloud(true)}catch(e){if(e.status===401||e.status===403){storeCloudSession(null);setSyncStatus("Bitte erneut anmelden","wait")}else setSyncStatus(navigator.onLine?"Cloud vorübergehend nicht erreichbar":"Offline - lokal verfügbar","error","Du bleibst angemeldet; später wird automatisch erneut versucht")}}
 async function logoutCloud(){try{await cloudRequest("/auth/v1/logout",{method:"POST"})}catch{}storeCloudSession(null);setSyncStatus("Nicht angemeldet");toast("Abgemeldet")}
@@ -240,7 +246,7 @@ async function ensurePermission(handle,ask=false){if(!handle)return false;const 
 async function readSyncFile(showMessage=true){
  if(!syncHandle||syncWriting)return false;
  if(syncDirty){setSyncStatus("Lokale Änderungen werden zuerst gespeichert","wait");return false}
- try{const file=await syncHandle.getFile();if(file.lastModified<=syncLastModified)return false;const text=await file.text();if(!text.trim())return false;const data=JSON.parse(text);if(!data.projects?.length)throw Error("Ungültige Daten");state=data;syncLastModified=file.lastModified;localStorage.setItem(KEY,JSON.stringify(state));render();setSyncStatus("Synchronisiert","on");if(showMessage)toast("Änderungen vom anderen Gerät geladen");return true}catch(e){setSyncStatus("Sync-Datei nicht erreichbar","error");return false}
+ try{const file=await syncHandle.getFile();if(file.lastModified<=syncLastModified)return false;const text=await file.text();if(!text.trim())return false;const data=JSON.parse(text);if(!Array.isArray(data?.projects))throw Error("Ungültige Daten");safetySnapshot("Vor Sync-Datei-Aktualisierung");state=normalizeState(data);syncLastModified=file.lastModified;localStorage.setItem(KEY,JSON.stringify(state));render();setSyncStatus("Synchronisiert","on");if(showMessage)toast("Änderungen vom anderen Gerät geladen");return true}catch(e){setSyncStatus("Sync-Datei nicht erreichbar","error");return false}
 }
 async function writeSyncFile(){
  if(!syncHandle||syncWriting)return;
@@ -252,7 +258,7 @@ async function connectSync(){
   if(syncHandle&&await ensurePermission(syncHandle,true)){await readSyncFile();await writeSyncFile();return}
   const handle=await showSaveFilePicker({suggestedName:"projektboard-daten.json",types:[{description:"Projektboard-Daten",accept:{"application/json":[".json"]}}]});
   syncHandle=handle;await rememberHandle(handle);const file=await handle.getFile();
-  if(file.size>0){try{const data=JSON.parse(await file.text());if(!data.projects?.length)throw Error();state=data;syncLastModified=file.lastModified;localStorage.setItem(KEY,JSON.stringify(state));render();setSyncStatus("Synchronisiert","on");toast("Daten aus der Sync-Datei geladen");return}catch{alert("Die gewählte Datei enthält keine gültigen Projektboard-Daten. Bitte wähle eine andere Datei.");syncHandle=null;setSyncStatus("Nur auf diesem Gerät");return}}
+  if(file.size>0){try{const data=JSON.parse(await file.text());if(!Array.isArray(data?.projects))throw Error();safetySnapshot("Vor Sync-Datei-Verbindung");state=normalizeState(data);syncLastModified=file.lastModified;localStorage.setItem(KEY,JSON.stringify(state));render();setSyncStatus("Synchronisiert","on");toast("Daten aus der Sync-Datei geladen");return}catch{alert("Die gewählte Datei enthält keine gültigen Projektboard-Daten. Bitte wähle eine andere Datei.");syncHandle=null;setSyncStatus("Nur auf diesem Gerät");return}}
   await writeSyncFile();
  }catch(e){if(e.name!=="AbortError")setSyncStatus("Verbindung fehlgeschlagen","error")}
 }
@@ -302,14 +308,14 @@ $("#trashBtn").onclick=()=>{renderTrash();$("#trashDialog").showModal()};$("#emp
 $("#authForm").onsubmit=e=>{e.preventDefault();authenticate("login")};$("#signupBtn").onclick=()=>authenticate("signup");
 document.querySelectorAll(".close").forEach(b=>b.onclick=closeAll);function closeAll(){document.querySelectorAll("dialog[open]").forEach(d=>d.close())}
 $("#exportBtn").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));a.download=`projektboard-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href)};
-$("#importBtn").onclick=()=>$("#importFile").click();$("#importFile").onchange=async e=>{try{const data=JSON.parse(await e.target.files[0].text());if(!data.projects?.length)throw Error();state=normalizeState(data);save();render()}catch{alert("Dieses Backup konnte nicht gelesen werden.")}};
+$("#importBtn").onclick=()=>$("#importFile").click();$("#importFile").onchange=async e=>{try{const data=JSON.parse(await e.target.files[0].text());if(!Array.isArray(data?.projects))throw Error();safetySnapshot("Vor Backup-Import");state=normalizeState(data);save();render();toast("Backup geprüft und wiederhergestellt")}catch{alert("Dieses Backup konnte nicht gelesen werden.")}};
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"&&lastUndoId){e.preventDefault();restoreTrash(lastUndoId)}if(e.key==="/"&&!document.querySelector("dialog[open]")){e.preventDefault();$("#search").focus()}if(e.key.toLowerCase()==="n"&&!["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName)&&!document.querySelector("dialog[open]"))openTask()});
  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&cloudDirty)pushCloud()});
  window.addEventListener("online",()=>{updateNetworkStatus();if(cloudDirty){clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,250)}else pullCloud(false)});window.addEventListener("offline",()=>{updateNetworkStatus();clearTimeout(cloudTimer);cloudTimer=null;if(cloudSession?.access_token)setSyncStatus("Offline - lokal verfügbar","error","Änderungen werden synchronisiert, sobald du online bist")});
 window.addEventListener("beforeunload",e=>{if(cloudDirty){pushCloud();e.preventDefault()}});
-function toast(text,action=null){const el=$("#toast"),btn=$("#toastAction");if(!action&&!btn.hidden)return;$("#toastText").textContent=text;btn.hidden=!action;btn.onclick=()=>{action?.();btn.hidden=true;el.classList.remove("show")};el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>{btn.hidden=true;el.classList.remove("show")},action?6000:1600)}
+function toast(text,action=null,actionText="Rückgängig"){const el=$("#toast"),btn=$("#toastAction");if(!action&&!btn.hidden)return;$("#toastText").textContent=text;btn.textContent=actionText;btn.hidden=!action;btn.onclick=()=>{action?.();btn.hidden=true;el.classList.remove("show")};el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>{btn.hidden=true;el.classList.remove("show")},action?8000:1600)}
  consumeAuthRedirect();render();restoreCloud();updateNetworkStatus();setInterval(()=>pullCloud(false),10000);setInterval(()=>{if(cloudLastUpdated&&!cloudWriting){const dot=$("#syncDot"),type=dot.classList.contains("error")?"error":dot.classList.contains("wait")?"wait":dot.classList.contains("on")?"on":"";setSyncStatus($("#syncStatus").textContent,type)}},30000);
-if("serviceWorker" in navigator&&location.protocol!=="file:")navigator.serviceWorker.register("./sw.js").catch(()=>{});
+if("serviceWorker" in navigator&&location.protocol!=="file:")navigator.serviceWorker.register("./sw.js").then(registration=>{registration.addEventListener("updatefound",()=>{const worker=registration.installing;worker?.addEventListener("statechange",()=>{if(worker.state==="installed"&&navigator.serviceWorker.controller)toast("Eine neue App-Version ist verfügbar.",()=>location.reload(),"Neu laden")})})}).catch(()=>{});
 </script>
 </body>
 </html>

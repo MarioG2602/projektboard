@@ -20,11 +20,15 @@ Eine lokale, plattformübergreifende erste Version zur Verwaltung von Projekten 
 - Automatische Speicherung im Browser
 - JSON-Backup und Wiederherstellung
 - Automatischer Cloud-Sync über Supabase
+- Automatische lokale Sicherheitsstände und bis zu 20 Cloud-Sicherungsstände
+- Datenprüfung und automatische Reparatur beschädigter oder älterer Datenstände
 
 ## Synchronisierung zwischen Windows und Mac
 
 Führe zunächst den Inhalt von `SUPABASE_SETUP.sql` einmal im Supabase SQL Editor aus.
 Führe das Skript nach Aktualisierungen erneut aus, damit neue Sicherheitsfunktionen und Datenbankspalten ergänzt werden.
+
+Das aktuelle SQL-Skript erlaubt der App nur Lesezugriff auf die Haupttabelle. Schreibvorgänge laufen ausschließlich über eine geprüfte Datenbankfunktion mit Versionskontrolle und automatischer Cloud-Sicherung.
 
 1. Öffne das Projektboard auf beiden Geräten.
 2. Klicke auf **Anmelden / Konto erstellen**.
@@ -42,3 +46,9 @@ Gelöschte Elemente landen im Papierkorb und können wiederhergestellt werden. N
 ## Veröffentlichung und Installation
 
 Die Veröffentlichung über GitHub Pages und die nötigen Supabase-Weiterleitungsadressen sind in `DEPLOYMENT.md` beschrieben. Über eine veröffentlichte HTTPS-Adresse lässt sich das Projektboard als PWA auf Windows, Mac, iPhone und iPad installieren.
+
+## Technische Prüfung
+
+Mit installiertem Node.js:
+
+`node data-core.test.js`

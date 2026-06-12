@@ -1,5 +1,11 @@
 # Manueller Testplan Projektboard
 
+## Automatische Integritätsprüfung
+
+`node data-core.test.js`
+
+Der Test prüft Datenmigration, doppelte IDs, verwaiste Aufgaben, ungültige Felder, leere Datenstände und Größenbegrenzungen.
+
 ## Vorbereitung
 
 - `index.html` unter Windows und Mac jeweils in Chrome oder Edge öffnen.
