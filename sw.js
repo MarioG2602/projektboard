@@ -1,4 +1,4 @@
-const CACHE_NAME = "projektboard-v11";
+const CACHE_NAME = "projektboard-v12";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/projektboard-192.png", "./icons/projektboard-512.png"];
 const CACHEABLE_DESTINATIONS = new Set([
   "document",
@@ -33,7 +33,10 @@ async function cacheResponse(request, response) {
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await cache.add("./index.html");
+      await Promise.allSettled(APP_SHELL.filter((url) => url !== "./index.html").map((url) => cache.add(url)));
+    })
   );
   self.skipWaiting();
 });
