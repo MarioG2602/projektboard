@@ -1,0 +1,25 @@
+{
+  "name": "Projektboard",
+  "short_name": "Projektboard",
+  "description": "Ein installierbares Projektboard mit Offline-Unterstuetzung.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#070707",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "./icons/projektboard-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/projektboard-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

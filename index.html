@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070707">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/projektboard-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icons/projektboard-192.png">
+  <title>Projektboard</title>
+  <style>
+    :root {
+      --bg:#090706; --panel:#100d0c; --card:#1d1918; --card2:#28211f;
+      --line:#573528; --line2:#372922; --text:#f7f1ec; --muted:#c4b5ab;
+      --accent:#d8754f; --accent2:#2a1711; --green:#65a981; --red:#c96464;
+      --radius:14px; --sidebar:260px;
+    }
+    *{box-sizing:border-box} html,body{height:100%;margin:0}
+    :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 72% -20%,rgba(216,117,79,.11),transparent 42%),linear-gradient(145deg,#090706 0%,#050505 72%);color:var(--text);overflow:hidden}
+    button,input,textarea,select{font:inherit} button{cursor:pointer}
+    .app{height:100%;display:grid;grid-template-columns:var(--sidebar) 1fr}
+    aside{background:linear-gradient(180deg,#100b09 0%,#080706 68%,#0d0908 100%);border-right:1px solid #6a3a29;padding:18px 12px;overflow:hidden;display:flex;flex-direction:column;box-shadow:8px 0 28px rgba(0,0,0,.28)}
+    .brand{padding:8px 8px 20px}.eyebrow{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:800}
+    .brand h1{font-size:20px;margin:7px 0 4px;color:#fff}.muted{color:var(--muted)}.tiny{font-size:11px}
+    .search{width:100%;background:#17110f;border:1px solid #4d3025;color:var(--text);padding:10px 12px;border-radius:10px;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+    .search:focus,input:focus,textarea:focus,select:focus{border-color:var(--accent);outline:none}
+    .side-head{display:flex;justify-content:space-between;align-items:center;margin:22px 7px 8px;color:#c6cad0;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .sidebar-main{min-height:0;overflow:auto;padding-bottom:14px}.sidebar-admin{flex:0 0 auto;max-height:48%;overflow:auto;margin-top:auto;padding-top:14px;border-top:1px solid #623725;background:transparent}.admin-card{display:grid;gap:9px;padding:10px;background:linear-gradient(145deg,#1b1210,#100d0c);border:1px solid #603626;border-radius:13px;box-shadow:0 8px 24px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,174,135,.05)}.admin-title{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#e2b7a4}.admin-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}.admin-actions .btn{padding:8px 6px;font-size:11px}
+    .icon-btn,.btn{border:1px solid #583426;background:linear-gradient(180deg,#211511,#140f0d);color:var(--text);border-radius:10px;padding:8px 11px;font-weight:700;font-size:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+    .icon-btn{padding:5px 8px}.btn:hover,.icon-btn:hover{border-color:var(--accent);background:var(--accent2)}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#160b07}.btn.primary:hover{background:#e18762;border-color:#e18762}.btn.danger{color:#e99494}
+    .projects{display:grid;gap:5px}.project{display:grid;grid-template-columns:12px 32px 1fr auto;gap:8px;align-items:center;width:100%;text-align:left;padding:8px;border:1px solid transparent;background:transparent;color:var(--text);border-radius:10px}
+    .project{color:#f5eee9}.project:hover{background:#211512;border-color:#4b2c20}.project.active{background:linear-gradient(90deg,#351c14,#231310);border-color:#8a482f;box-shadow:inset 3px 0 0 var(--accent),0 5px 16px rgba(0,0,0,.2)}.project.dragging{opacity:.35}.project.drag-over{border-color:var(--accent);background:#2c1711}.project-grip{color:#b78a76;cursor:grab;font-weight:900}.project-icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(145deg,#512c20,#2c1914);color:#ffd0bb;font-size:10px;font-weight:900;border:1px solid #82452f}
+    .project-name{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#f6f0eb}.count{font-size:10px;color:#d0c2b9}
+    .sync-box{display:grid;gap:7px;padding-bottom:8px;border-bottom:1px solid var(--line2)}.sync-state{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--muted)}.sync-account{font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 0}.sync-dot{width:7px;height:7px;border-radius:50%;background:#777}.sync-dot.on{background:var(--green);box-shadow:0 0 7px var(--green)}.sync-dot.wait{background:#d49a55}.sync-dot.error{background:var(--red)}
+    main{min-width:0;display:flex;flex-direction:column;height:100%}.top{padding:22px 24px 16px;border-bottom:1px solid #5d3324;background:linear-gradient(180deg,#120d0b,#090807);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+    .top-row{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.top h2{font-size:25px;margin:6px 0 4px}.actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+    .goal{margin-top:15px;background:linear-gradient(90deg,#201410,#151110);border:1px solid #5d3628;padding:10px 12px;border-radius:12px;font-size:11px;color:#dfcec3;display:flex;justify-content:space-between;box-shadow:inset 3px 0 0 #8c4b34}
+    .filters{margin-top:10px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}.filter-select{background:#110d0b;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:7px 9px;font-size:11px}.filter-select.active{border-color:var(--accent);background:var(--accent2)}.filter-note{font-size:10px;color:#c5b8af}
+    .progress{height:5px;background:#2a201d;border-radius:10px;margin-top:13px;overflow:hidden;box-shadow:inset 0 1px 3px #000}.progress>i{display:block;height:100%;background:linear-gradient(90deg,#a75134,var(--accent),#e99b79);transition:width .25s;box-shadow:0 0 12px rgba(216,117,79,.34)}
+    .board-wrap{flex:1;overflow:auto;padding:18px 20px 24px;background:radial-gradient(circle at 40% 0%,rgba(111,53,34,.09),transparent 48%)}.board{display:flex;align-items:flex-start;gap:14px;min-height:100%;width:max-content}
+    .column{width:310px;max-height:calc(100vh - 190px);display:flex;flex-direction:column;background:linear-gradient(180deg,#191413,#100e0e);border:1px solid #493027;border-radius:var(--radius);box-shadow:0 12px 30px rgba(0,0,0,.27),inset 0 1px 0 rgba(255,184,150,.035)}
+    .column.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px rgba(216,117,79,.18),0 12px 32px rgba(0,0,0,.3)}.col-head{padding:12px;display:flex;gap:8px;align-items:center;border-bottom:1px solid #493027;background:linear-gradient(180deg,rgba(78,39,26,.22),transparent)}
+    .grip{color:#8e766b;cursor:grab}.col-title{font-size:12px;font-weight:850;flex:1;color:#f6f0ec}.badge{font-size:10px;color:#d5c9c1;background:#282324;padding:3px 7px;border-radius:20px}
+    .tasks{padding:10px;display:grid;gap:9px;overflow:auto;min-height:90px}.task{background:linear-gradient(145deg,#231b19,#171516);border:1px solid #4a3128;border-radius:11px;padding:11px;cursor:grab;transition:.15s;box-shadow:0 6px 16px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.025)}
+    .task:hover{transform:translateY(-2px);border-color:#985138;background:linear-gradient(145deg,#30201b,#1c1818);box-shadow:0 10px 22px rgba(0,0,0,.3),0 0 0 1px rgba(216,117,79,.08)}.task.dragging{opacity:.35}.task-title{font-size:13px;font-weight:780;line-height:1.35;margin-bottom:9px;color:#fff8f3}
+    .task-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.tag{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:3px 6px;border-radius:6px;background:var(--accent2);color:#e59a7b}
+    .tag.low{background:#132219;color:#79b791}.tag.high{background:#2a1515;color:#dc8585}.date{font-size:10px;color:var(--muted);margin-left:auto}.overdue{color:var(--red)}
+    .add-task{margin:0 9px 9px;border:1px dashed #69402f;background:rgba(75,36,24,.1);color:#d4c0b5;padding:9px;border-radius:10px;text-align:left}.add-task:hover{color:#f0a684;border-color:var(--accent);background:rgba(216,117,79,.08)}
+    .add-column{width:230px;border:1px dashed #3a2b25;background:#0d0b0a;color:#c8b9b0;border-radius:var(--radius);padding:14px;text-align:left}.empty{font-size:11px;color:#c9bbb2;text-align:center;padding:22px 9px;line-height:1.6}.empty br+*{color:#d8cbc3}
+    dialog{width:min(560px,calc(100% - 24px));border:1px solid var(--line);border-radius:16px;background:#111113;color:var(--text);padding:0;box-shadow:0 24px 70px #000}
+    dialog::backdrop{background:rgba(0,0,0,.72);backdrop-filter:blur(3px)}.modal-head,.modal-foot{padding:15px 17px;display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--line2)}.modal-foot{border:0;border-top:1px solid var(--line2);justify-content:flex-end}
+    .modal-body{padding:16px;display:grid;gap:12px}.field{display:grid;gap:6px}.field label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+    .field input,.field textarea,.field select{width:100%;background:#09090a;border:1px solid #303034;color:var(--text);border-radius:9px;padding:10px}.field textarea{min-height:105px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .toast{position:fixed;right:18px;bottom:18px;background:#1b1411;border:1px solid #663622;padding:10px 13px;border-radius:10px;font-size:11px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;display:flex;gap:10px;align-items:center}.toast.show{opacity:1;transform:none;pointer-events:auto}.toast button{border:0;background:transparent;color:var(--accent);font-weight:800;cursor:pointer}
+    .trash-list{display:grid;gap:8px;max-height:55vh;overflow:auto}.trash-item{background:#171719;border:1px solid var(--line2);border-radius:10px;padding:10px;display:grid;grid-template-columns:1fr auto;gap:8px}.trash-item b{font-size:12px}.trash-item small{font-size:10px;color:var(--muted)}.trash-actions{display:flex;gap:5px;align-items:center}
+    .mobile-menu{display:none}
+    @media(max-width:760px){.app{grid-template-columns:1fr}aside{position:fixed;z-index:5;width:260px;height:100%;transform:translateX(-100%);transition:.2s}aside.open{transform:none}.mobile-menu{display:inline-block}.top{padding:14px}.top h2{font-size:20px}.goal{display:none}.board-wrap{padding:12px}.column{width:min(86vw,310px);max-height:calc(100vh - 145px)}.row{grid-template-columns:1fr}.sidebar-main{overflow:auto}.sidebar-admin{margin-top:18px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar">
+    <div class="sidebar-main"><div class="brand"><div class="eyebrow">Meine Zentrale</div><h1>Projektboard</h1><div class="muted tiny">Projekte · Aufgaben · Fortschritt</div></div>
+      <input class="search" id="search" placeholder="Aufgaben suchen  /">
+      <div class="side-head"><span>Projekte</span><button class="icon-btn" id="newProject" title="Neues Projekt">+</button></div>
+      <div class="projects" id="projects"></div>
+    </div>
+    <div class="sidebar-admin">
+      <div class="admin-card"><div class="admin-title">Verwaltung</div>
+        <div class="sync-box"><div class="sync-state"><i class="sync-dot" id="syncDot"></i><span id="syncStatus">Nicht angemeldet</span></div><div class="sync-account" id="syncAccount" hidden></div><button class="btn primary" id="syncBtn">Anmelden / Konto erstellen</button><button class="btn" id="syncNowBtn" hidden>Jetzt synchronisieren</button><button class="btn" id="logoutBtn" hidden>Abmelden</button></div>
+        <div class="admin-actions"><button class="btn" id="trashBtn">Papierkorb <span id="trashCount"></span></button><button class="btn" id="backupBtn">Backup</button></div>
+      </div>
+    </div>
+  </aside>
+  <main>
+    <header class="top">
+      <div class="top-row">
+        <div><div class="eyebrow">Aktuelles Projekt</div><h2 id="projectTitle"></h2><div class="muted tiny" id="projectDescription"></div></div>
+        <div class="actions"><button class="btn mobile-menu" id="menuBtn">Menü</button><button class="btn" id="editProject">Projekt bearbeiten</button><button class="btn" id="newColumn">+ Spalte</button><button class="btn primary" id="newTask">+ Aufgabe</button></div>
+      </div>
+      <div class="progress"><i id="progressBar"></i></div>
+      <div class="goal"><span id="goalText"></span><b id="progressText"></b></div>
+      <div class="filters"><select class="filter-select" id="priorityFilter"><option value="">Alle Prioritäten</option><option value="high">Hoch</option><option value="normal">Normal</option><option value="low">Niedrig</option></select><select class="filter-select" id="labelFilter"><option value="">Alle Labels</option></select><select class="filter-select" id="dueFilter"><option value="">Alle Termine</option><option value="overdue">Überfällig</option><option value="today">Heute</option><option value="week">Diese Woche</option><option value="none">Ohne Datum</option></select><button class="btn" id="clearFilters" hidden>Filter löschen</button><span class="filter-note" id="filterNote"></span></div>
+    </header>
+    <div class="board-wrap"><div class="board" id="board"></div></div>
+  </main>
+</div>
+
+<dialog id="taskDialog">
+  <form id="taskForm"><div class="modal-head"><b id="taskDialogTitle">Aufgabe</b><button type="button" class="icon-btn close">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="taskId"><div class="field"><label>Titel</label><input id="taskTitle" required maxlength="140"></div>
+      <div class="field"><label>Beschreibung</label><textarea id="taskDescription" placeholder="Notizen, nächste Schritte, Links ..."></textarea></div>
+      <div class="row"><div class="field"><label>Spalte</label><select id="taskColumn"></select></div><div class="field"><label>Priorität</label><select id="taskPriority"><option value="low">Niedrig</option><option value="normal">Normal</option><option value="high">Hoch</option></select></div></div>
+      <div class="row"><div class="field"><label>Fällig am</label><input type="date" id="taskDue"></div><div class="field"><label>Label</label><input id="taskLabel" maxlength="30" placeholder="z. B. Arbeit"></div></div>
+    </div><div class="modal-foot"><button type="button" class="btn danger" id="deleteTask">Löschen</button><button class="btn primary">Speichern</button></div>
+  </form>
+</dialog>
+<dialog id="trashDialog">
+  <div class="modal-head"><b>Papierkorb</b><button type="button" class="icon-btn close">×</button></div>
+  <div class="modal-body"><div class="trash-list" id="trashList"></div></div>
+  <div class="modal-foot"><button type="button" class="btn danger" id="emptyTrash">Papierkorb leeren</button><button type="button" class="btn close">Schließen</button></div>
+</dialog>
+<dialog id="backupDialog">
+  <div class="modal-head"><b>Backup & Wiederherstellung</b><button type="button" class="icon-btn close">×</button></div>
+  <div class="modal-body"><p class="muted tiny">Cloud-Sync speichert automatisch. Ein Backup ist eine zusätzliche Sicherheitskopie für Notfälle.</p><button class="btn primary" id="exportBtn">Backup herunterladen</button><button class="btn" id="importBtn">Backup wiederherstellen</button><input id="importFile" type="file" accept=".json" hidden></div>
+  <div class="modal-foot"><button type="button" class="btn close">Schließen</button></div>
+</dialog>
+<dialog id="projectDialog">
+  <form id="projectForm"><div class="modal-head"><b>Projekt konfigurieren</b><button type="button" class="icon-btn close">×</button></div>
+    <div class="modal-body"><input type="hidden" id="projectId"><div class="field"><label>Name</label><input id="projectName" required maxlength="50"></div><div class="field"><label>Beschreibung</label><input id="projectDesc" maxlength="120"></div><div class="field"><label>Projektziel</label><input id="projectGoal" maxlength="160"></div></div>
+    <div class="modal-foot"><button type="button" class="btn danger" id="deleteProject">Projekt löschen</button><button class="btn primary">Speichern</button></div>
+  </form>
+</dialog>
+<dialog id="columnDialog">
+  <form id="columnForm"><div class="modal-head"><b>Spalte konfigurieren</b><button type="button" class="icon-btn close">×</button></div>
+    <div class="modal-body"><input type="hidden" id="columnId"><div class="field"><label>Name</label><input id="columnName" required maxlength="40"></div><div class="field"><label>Typ</label><select id="columnDone"><option value="false">Offen / in Arbeit</option><option value="true">Erledigt</option></select></div></div>
+    <div class="modal-foot"><button type="button" class="btn danger" id="deleteColumn">Spalte löschen</button><button class="btn primary">Speichern</button></div>
+  </form>
+</dialog>
+<dialog id="authDialog">
+  <form id="authForm"><div class="modal-head"><b>Cloud-Synchronisierung</b><button type="button" class="icon-btn close">×</button></div>
+    <div class="modal-body"><p class="muted tiny">Verwende auf Windows und Mac dieselbe E-Mail-Adresse und dasselbe Passwort.</p><div class="field"><label>E-Mail</label><input type="email" id="authEmail" required autocomplete="email"></div><div class="field"><label>Passwort</label><input type="password" id="authPassword" required minlength="6" autocomplete="current-password"></div><div class="muted tiny" id="authMessage"></div></div>
+    <div class="modal-foot"><button type="button" class="btn" id="signupBtn">Neues Konto erstellen</button><button class="btn primary">Anmelden</button></div>
+  </form>
+</dialog>
+<div class="toast" id="toast"><span id="toastText"></span><button id="toastAction" hidden>Rückgängig</button></div>
+<script>
+const KEY="projektboard.v1", CLOUD_KEY="projektboard.cloud.session", DIRTY_KEY="projektboard.cloud.dirty", SUPABASE_URL="https://ytftfejvdjcehioqyeik.supabase.co", SUPABASE_KEY="sb_publishable_pyQ3eNqViwwHepevRwtTqQ_aUNIbLHC"; const $=s=>document.querySelector(s); const uid=()=>crypto.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);
+const seed={active:null,projects:[{id:uid(),name:"Website Relaunch",description:"Planung und Umsetzung der neuen Website.",goal:"Projektziel: Erste veröffentlichbare Version fertigstellen.",columns:[{id:uid(),name:"Ideen",done:false},{id:uid(),name:"Noch zu erledigen",done:false},{id:uid(),name:"In Arbeit",done:false},{id:uid(),name:"Erledigt",done:true}],tasks:[]},{id:uid(),name:"Persönlich",description:"Private Aufgaben und Ideen.",goal:"Kleine Schritte, klarer Kopf.",columns:[{id:uid(),name:"Inbox",done:false},{id:uid(),name:"Diese Woche",done:false},{id:uid(),name:"Erledigt",done:true}],tasks:[]}]}; seed.active=seed.projects[0].id;
+seed.projects[0].tasks=[{id:uid(),title:"Inhalte der Startseite strukturieren",description:"",columnId:seed.projects[0].columns[1].id,priority:"high",due:"",label:"Konzept"},{id:uid(),title:"Farben und Typografie festlegen",description:"",columnId:seed.projects[0].columns[2].id,priority:"normal",due:"",label:"Design"},{id:uid(),title:"Hosting vergleichen",description:"",columnId:seed.projects[0].columns[0].id,priority:"low",due:"",label:"Idee"}];
+let state=load(), query="", filters={priority:"",label:"",due:""}, draggedTask=null, draggedColumn=null, draggedProject=null, projectDragMoved=false, lastUndoId=null, syncHandle=null, syncLastModified=0, syncWriteTimer=null, syncWriting=false, syncDirty=false;
+let cloudSession=loadCloudSession(), cloudDirty=localStorage.getItem(DIRTY_KEY)==="1", cloudTimer=null, cloudWriting=false, cloudLastUpdated="", cloudRevision=null, cloudHasRow=false, cloudConflict=false, cloudChangeId=0;
+function normalizeState(data){data.trash=Array.isArray(data.trash)?data.trash:[];for(const p of data?.projects||[]){for(const c of p.columns||[]){p.tasks.filter(t=>t.columnId===c.id).sort((a,b)=>Number.isFinite(a.order)&&Number.isFinite(b.order)?a.order-b.order:p.tasks.indexOf(a)-p.tasks.indexOf(b)).forEach((t,i)=>t.order=(i+1)*1000)}}return data}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY));return normalizeState(v?.projects?.length?v:structuredClone(seed))}catch{return normalizeState(structuredClone(seed))}}
+function nextTaskOrder(p,columnId){return Math.max(0,...p.tasks.filter(t=>t.columnId===columnId).map(t=>Number.isFinite(t.order)?t.order:0))+1000}
+function reorderTask(p,taskId,targetColumnId,targetIndex){const task=p.tasks.find(t=>t.id===taskId);if(!task)return false;const source=task.columnId,target=p.tasks.filter(t=>t.columnId===targetColumnId&&t.id!==taskId).sort((a,b)=>a.order-b.order);const before=target.map(t=>t.id).join("|"),oldOrder=task.order;task.columnId=targetColumnId;target.splice(targetIndex,0,task);target.forEach((t,i)=>t.order=(i+1)*1000);if(source!==targetColumnId)p.tasks.filter(t=>t.columnId===source&&t.id!==taskId).sort((a,b)=>a.order-b.order).forEach((t,i)=>t.order=(i+1)*1000);return source!==targetColumnId||oldOrder!==task.order||before!==target.filter(t=>t.id!==taskId).map(t=>t.id).join("|")}
+function hasActiveFilters(){return !!(query||filters.priority||filters.label||filters.due)}
+function trashItem(type,data,meta={}){const item={id:uid(),type,data:structuredClone(data),meta,deletedAt:new Date().toISOString()};state.trash.unshift(item);return item}
+function restoreTrash(id){const item=state.trash.find(x=>x.id===id);if(!item)return;const fallback=project();if(item.type==="task"){const p=state.projects.find(x=>x.id===item.meta.projectId)||fallback;if(!p)return;const column=p.columns.find(c=>c.id===item.data.columnId)||p.columns[0];if(p.tasks.some(t=>t.id===item.data.id))item.data.id=uid();item.data.columnId=column.id;item.data.order=Number.isFinite(item.meta.order)?item.meta.order:nextTaskOrder(p,column.id);p.tasks.push(item.data);normalizeState(state)}else if(item.type==="column"){const p=state.projects.find(x=>x.id===item.meta.projectId)||fallback;if(!p)return;const oldId=item.data.column.id;if(p.columns.some(c=>c.id===oldId)){item.data.column.id=uid();item.data.tasks.forEach(t=>t.columnId=item.data.column.id)}item.data.tasks.forEach(t=>{if(p.tasks.some(x=>x.id===t.id))t.id=uid()});p.columns.splice(Math.min(item.meta.index??p.columns.length,p.columns.length),0,item.data.column);p.tasks.push(...item.data.tasks);normalizeState(state)}else if(item.type==="project"){if(state.projects.some(p=>p.id===item.data.id))item.data.id=uid();const taskIds=new Set(state.projects.flatMap(p=>p.tasks.map(t=>t.id)));item.data.tasks.forEach(t=>{if(taskIds.has(t.id))t.id=uid()});state.projects.splice(Math.min(item.meta.index??state.projects.length,state.projects.length),0,item.data);state.active=item.data.id}state.trash=state.trash.filter(x=>x.id!==id);lastUndoId=null;save();render();renderTrash();toast("Wiederhergestellt")}
+function trashLabel(item){return item.type==="task"?item.data.title:item.type==="column"?item.data.column.name:item.data.name}
+function renderTrash(){const items=state.trash||[];$("#trashCount").textContent=items.length?`(${items.length})`:"";$("#trashList").innerHTML=items.length?items.map(i=>`<div class="trash-item"><div><b>${esc(trashLabel(i))}</b><br><small>${({task:"Aufgabe",column:"Spalte",project:"Projekt"})[i.type]} · ${new Date(i.deletedAt).toLocaleString("de-DE")}</small></div><div class="trash-actions"><button class="icon-btn restore-trash" data-id="${esc(i.id)}">Wiederherstellen</button><button class="icon-btn delete-trash" data-id="${esc(i.id)}">Endgültig löschen</button></div></div>`).join(""):`<div class="empty">Der Papierkorb ist leer.</div>`;document.querySelectorAll(".restore-trash").forEach(b=>b.onclick=()=>restoreTrash(b.dataset.id));document.querySelectorAll(".delete-trash").forEach(b=>b.onclick=()=>{if(confirm("Diesen Eintrag endgültig löschen?")){state.trash=state.trash.filter(x=>x.id!==b.dataset.id);save();render();renderTrash()}})}
+function matchesDue(t,type){if(!type)return true;if(type==="none")return !t.due;if(!t.due)return false;const due=new Date(t.due+"T12:00:00"),now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate()),tomorrow=new Date(today);tomorrow.setDate(today.getDate()+1);const week=new Date(today);week.setDate(today.getDate()+7);if(type==="overdue")return due<today;if(type==="today")return due>=today&&due<tomorrow;if(type==="week")return due>=today&&due<week;return true}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch{alert("Die lokale Speicherung ist blockiert oder voll. Bitte exportiere vorsichtshalber ein Backup.")}if(cloudSession?.access_token){cloudDirty=true;localStorage.setItem(DIRTY_KEY,"1");cloudChangeId++;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,500)}else toast("Lokal gespeichert")}
+function setSyncStatus(text,type=""){ $("#syncStatus").textContent=text;$("#syncDot").className=`sync-dot ${type}`;const on=!!cloudSession?.access_token,email=cloudSession?.user?.email||"";$("#syncNowBtn").hidden=!on;$("#logoutBtn").hidden=!on;$("#syncBtn").hidden=on;$("#syncAccount").hidden=!email;$("#syncAccount").textContent=email?`Angemeldet: ${email}`:"" }
+function loadCloudSession(){try{return JSON.parse(localStorage.getItem(CLOUD_KEY))}catch{return null}}
+function storeCloudSession(session){cloudSession=session;if(session)localStorage.setItem(CLOUD_KEY,JSON.stringify(session));else localStorage.removeItem(CLOUD_KEY)}
+async function cloudRequest(path,options={}){
+ const headers={apikey:SUPABASE_KEY,"Content-Type":"application/json",...(options.headers||{})};if(cloudSession?.access_token)headers.Authorization=`Bearer ${cloudSession.access_token}`;
+ const response=await fetch(`${SUPABASE_URL}${path}`,{...options,headers});const text=await response.text();const data=text?JSON.parse(text):null;
+ if(response.status===401&&cloudSession?.refresh_token&&!options._retried){await refreshCloudSession();return cloudRequest(path,{...options,_retried:true})}
+ if(!response.ok)throw Error(data?.msg||data?.message||data?.error_description||data?.error||"Cloud-Anfrage fehlgeschlagen");return data
+}
+async function refreshCloudSession(){const response=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:cloudSession.refresh_token})});const data=await response.json();if(!response.ok)throw Error("Sitzung abgelaufen");storeCloudSession(data)}
+async function authenticate(mode){
+ const email=$("#authEmail").value.trim(),password=$("#authPassword").value;$("#authMessage").textContent="Verbindung wird hergestellt ...";
+ try{const path=mode==="signup"?"/auth/v1/signup":"/auth/v1/token?grant_type=password";const data=await cloudRequest(path,{method:"POST",body:JSON.stringify({email,password})});if(!data.access_token){$("#authMessage").textContent="Konto erstellt. Bitte bestätige die E-Mail und melde dich anschließend an.";return}localStorage.setItem("projektboard.before-login.backup",JSON.stringify({saved_at:new Date().toISOString(),state}));storeCloudSession(data);closeAll();setSyncStatus("Cloud verbunden","on");await pullCloud(true)}catch(e){$("#authMessage").textContent=e.message}
+}
+async function pullCloud(first=false,force=false){
+ if(!cloudSession?.access_token||cloudWriting||(!force&&(cloudDirty||cloudConflict)))return;
+ try{const rows=await cloudRequest(`/rest/v1/projectboard_data?select=board_data,updated_at,revision&user_id=eq.${cloudSession.user.id}`);if(rows?.[0]){cloudHasRow=true;if(force||rows[0].revision!==cloudRevision){state=normalizeState(rows[0].board_data);cloudLastUpdated=rows[0].updated_at;cloudRevision=rows[0].revision||1;cloudDirty=false;cloudConflict=false;localStorage.removeItem(DIRTY_KEY);localStorage.setItem(KEY,JSON.stringify(state));render();if(!first)toast("Änderungen aus der Cloud geladen")}}else if(first){cloudHasRow=false;cloudRevision=null;cloudDirty=true;cloudChangeId++;await pushCloud()}setSyncStatus("Cloud synchronisiert","on")}catch(e){setSyncStatus("Cloud-Verbindung fehlgeschlagen","error")}
+}
+async function pushCloud(){
+ if(!cloudSession?.access_token||cloudWriting||!cloudDirty||cloudConflict)return;
+ try{
+  cloudWriting=true;setSyncStatus("Speichert in der Cloud ...","wait");const sentChangeId=cloudChangeId,payload=structuredClone(state);
+  const rows=await cloudRequest("/rest/v1/rpc/save_projectboard",{method:"POST",body:JSON.stringify({p_expected_revision:cloudRevision,p_board_data:payload})}),result=rows?.[0];
+  if(!result?.saved){cloudConflict=true;localStorage.setItem("projektboard.conflict.backup",JSON.stringify({saved_at:new Date().toISOString(),state}));setSyncStatus("Konflikt erkannt - bitte lösen","error");return}
+  cloudHasRow=true;cloudRevision=result.current_revision;cloudLastUpdated=result.current_updated_at;cloudDirty=cloudChangeId!==sentChangeId;if(!cloudDirty)localStorage.removeItem(DIRTY_KEY);setSyncStatus(cloudDirty?"Weitere Änderungen werden gespeichert ...":"Cloud synchronisiert",cloudDirty?"wait":"on");toast("In der Cloud gespeichert")
+ }catch(e){setSyncStatus("Cloud-Speicherung fehlgeschlagen","error")}finally{cloudWriting=false;if(cloudDirty&&!cloudConflict){clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,100)}}
+}
+async function resolveCloudConflict(){
+ if(!cloudConflict)return;
+ const useCloud=confirm("Windows und Mac haben gleichzeitig Änderungen gespeichert.\n\nOK: Cloud-Stand laden\nAbbrechen: Diesen lokalen Stand in die Cloud schreiben\n\nEine lokale Sicherung wurde automatisch gespeichert.");
+ if(useCloud){await pullCloud(false,true);return}
+ try{const rows=await cloudRequest(`/rest/v1/projectboard_data?select=revision&user_id=eq.${cloudSession.user.id}`);cloudRevision=rows?.[0]?.revision||null;cloudConflict=false;cloudDirty=true;cloudChangeId++;await pushCloud();if(!cloudConflict)toast("Lokaler Stand wurde übernommen")}catch{setSyncStatus("Konflikt konnte nicht gelöst werden","error")}
+}
+async function restoreCloud(){if(!cloudSession?.access_token)return;setSyncStatus("Cloud wird verbunden ...","wait");try{const data=await cloudRequest("/auth/v1/user");cloudSession.user=data;storeCloudSession(cloudSession);if(cloudDirty){cloudConflict=true;localStorage.setItem("projektboard.conflict.backup",JSON.stringify({saved_at:new Date().toISOString(),state}));setSyncStatus("Ungesendete Änderungen - bitte synchronisieren","error")}else await pullCloud(true)}catch{storeCloudSession(null);setSyncStatus("Bitte erneut anmelden","wait")}}
+async function logoutCloud(){try{await cloudRequest("/auth/v1/logout",{method:"POST"})}catch{}storeCloudSession(null);setSyncStatus("Nicht angemeldet");toast("Abgemeldet")}
+function syncDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open("projektboard-sync",1);r.onupgradeneeded=()=>r.result.createObjectStore("handles");r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function rememberHandle(handle){const db=await syncDb();return new Promise((resolve,reject)=>{const tx=db.transaction("handles","readwrite");tx.objectStore("handles").put(handle,"main");tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
+async function recalledHandle(){const db=await syncDb();return new Promise((resolve,reject)=>{const r=db.transaction("handles").objectStore("handles").get("main");r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function ensurePermission(handle,ask=false){if(!handle)return false;const opts={mode:"readwrite"};if(await handle.queryPermission(opts)==="granted")return true;return ask&&await handle.requestPermission(opts)==="granted"}
+async function readSyncFile(showMessage=true){
+ if(!syncHandle||syncWriting)return false;
+ if(syncDirty){setSyncStatus("Lokale Änderungen werden zuerst gespeichert","wait");return false}
+ try{const file=await syncHandle.getFile();if(file.lastModified<=syncLastModified)return false;const text=await file.text();if(!text.trim())return false;const data=JSON.parse(text);if(!data.projects?.length)throw Error("Ungültige Daten");state=data;syncLastModified=file.lastModified;localStorage.setItem(KEY,JSON.stringify(state));render();setSyncStatus("Synchronisiert","on");if(showMessage)toast("Änderungen vom anderen Gerät geladen");return true}catch(e){setSyncStatus("Sync-Datei nicht erreichbar","error");return false}
+}
+async function writeSyncFile(){
+ if(!syncHandle||syncWriting)return;
+ try{if(!await ensurePermission(syncHandle,false)){setSyncStatus("Klick zum erneuten Aktivieren","wait");return}syncWriting=true;setSyncStatus("Speichert ...","wait");const writable=await syncHandle.createWritable();await writable.write(JSON.stringify(state,null,2));await writable.close();syncDirty=false;syncLastModified=(await syncHandle.getFile()).lastModified;setSyncStatus("Synchronisiert","on");toast("Auf allen Geräten gespeichert")}catch(e){setSyncStatus("Synchronisierung fehlgeschlagen","error")}finally{syncWriting=false}
+}
+async function connectSync(){
+ if(!window.showSaveFilePicker){alert("Der einfache Datei-Sync benötigt Chrome oder Edge auf Windows und Mac.");return}
+ try{
+  if(syncHandle&&await ensurePermission(syncHandle,true)){await readSyncFile();await writeSyncFile();return}
+  const handle=await showSaveFilePicker({suggestedName:"projektboard-daten.json",types:[{description:"Projektboard-Daten",accept:{"application/json":[".json"]}}]});
+  syncHandle=handle;await rememberHandle(handle);const file=await handle.getFile();
+  if(file.size>0){try{const data=JSON.parse(await file.text());if(!data.projects?.length)throw Error();state=data;syncLastModified=file.lastModified;localStorage.setItem(KEY,JSON.stringify(state));render();setSyncStatus("Synchronisiert","on");toast("Daten aus der Sync-Datei geladen");return}catch{alert("Die gewählte Datei enthält keine gültigen Projektboard-Daten. Bitte wähle eine andere Datei.");syncHandle=null;setSyncStatus("Nur auf diesem Gerät");return}}
+  await writeSyncFile();
+ }catch(e){if(e.name!=="AbortError")setSyncStatus("Verbindung fehlgeschlagen","error")}
+}
+async function restoreSync(){try{const h=await recalledHandle();if(!h)return;syncHandle=h;if(await ensurePermission(h,false)){setSyncStatus("Synchronisiert","on");await readSyncFile(false)}else setSyncStatus("Klick zum erneuten Aktivieren","wait")}catch{}}
+function project(){return state.projects.find(p=>p.id===state.active)||state.projects[0]}
+function esc(v=""){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function render(){
+ draggedTask=null;draggedColumn=null;
+ const p=project(); if(!p)return;
+ $("#projects").innerHTML=state.projects.map(x=>`<button class="project ${x.id===p.id?"active":""}" draggable="true" data-project="${esc(x.id)}"><span class="project-grip" title="Projekt verschieben">⋮⋮</span><span class="project-icon">${esc(x.name.slice(0,2).toUpperCase())}</span><span class="project-name">${esc(x.name)}</span><span class="count">${x.tasks.length}</span></button>`).join("");
+ $("#trashCount").textContent=state.trash.length?`(${state.trash.length})`:"";
+ $("#projectTitle").textContent=p.name; $("#projectDescription").textContent=p.description||"Ohne Beschreibung"; $("#goalText").textContent=p.goal||"Projektziel noch nicht festgelegt.";
+ const doneIds=new Set(p.columns.filter(c=>c.done).map(c=>c.id)), done=p.tasks.filter(t=>doneIds.has(t.columnId)).length, pct=p.tasks.length?Math.round(done/p.tasks.length*100):0;
+ $("#progressBar").style.width=pct+"%"; $("#progressText").textContent=`${pct}% erledigt`;
+ const labels=[...new Set(p.tasks.map(t=>t.label).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"));$("#labelFilter").innerHTML=`<option value="">Alle Labels</option>`+labels.map(l=>`<option value="${esc(l)}" ${filters.label===l?"selected":""}>${esc(l)}</option>`).join("");$("#priorityFilter").value=filters.priority;$("#dueFilter").value=filters.due;const active=hasActiveFilters();document.querySelectorAll(".filter-select").forEach(el=>el.classList.toggle("active",!!el.value));$("#clearFilters").hidden=!active;$("#filterNote").textContent=active?"Drag-and-drop ist während aktiver Filter deaktiviert.":"";
+ const filtered=p.tasks.filter(t=>(!query||`${t.title} ${t.description} ${t.label}`.toLowerCase().includes(query))&&(!filters.priority||t.priority===filters.priority)&&(!filters.label||t.label===filters.label)&&matchesDue(t,filters.due));
+ $("#board").innerHTML=p.columns.map(c=>{const all=p.tasks.filter(t=>t.columnId===c.id),tasks=filtered.filter(t=>t.columnId===c.id).sort((a,b)=>a.order-b.order);return `<section class="column" draggable="${!active}" data-column="${esc(c.id)}"><div class="col-head"><span class="grip">⋮⋮</span><span class="col-title">${esc(c.name)}</span><span class="badge">${active?`${tasks.length}/${all.length}`:tasks.length}</span><button class="icon-btn edit-col">•••</button></div><div class="tasks">${tasks.length?tasks.map(taskCard).join(""):`<div class="empty">${active&&all.length?"Keine passenden Aufgaben.":"Ziehe eine Aufgabe hierher<br>oder erstelle eine neue."}</div>`}</div><button class="add-task">+ Aufgabe hinzufügen</button></section>`}).join("")+`<button class="add-column" id="inlineColumn">+ Neue Spalte</button>`;
+ bindProjects();bindBoard();
+}
+function bindProjects(){document.querySelectorAll(".project").forEach(el=>{el.ondragstart=e=>{draggedProject=el.dataset.project;projectDragMoved=false;el.classList.add("dragging");e.dataTransfer.effectAllowed="move"};el.ondragend=()=>{draggedProject=null;document.querySelectorAll(".project").forEach(x=>x.classList.remove("dragging","drag-over"))};el.ondragover=e=>{if(!draggedProject||draggedProject===el.dataset.project)return;e.preventDefault();el.classList.add("drag-over")};el.ondragleave=()=>el.classList.remove("drag-over");el.ondrop=e=>{e.preventDefault();el.classList.remove("drag-over");if(!draggedProject||draggedProject===el.dataset.project)return;const from=state.projects.findIndex(p=>p.id===draggedProject),target=state.projects.findIndex(p=>p.id===el.dataset.project);if(from<0||target<0)return;const rect=el.getBoundingClientRect(),after=e.clientY>rect.top+rect.height/2,item=state.projects.splice(from,1)[0];let to=state.projects.findIndex(p=>p.id===el.dataset.project)+(after?1:0);state.projects.splice(to,0,item);projectDragMoved=true;draggedProject=null;save();render();toast("Projektreihenfolge gespeichert");setTimeout(()=>projectDragMoved=false,250)}})}
+function taskCard(t){const overdue=t.due&&new Date(t.due+"T23:59:59")<new Date(),priority=["low","normal","high"].includes(t.priority)?t.priority:"normal";return `<article class="task" tabindex="0" role="button" draggable="${!hasActiveFilters()}" data-task="${esc(t.id)}" title="${esc(t.description||"Klicken zum Bearbeiten")}"><div class="task-title">${esc(t.title)}</div><div class="task-meta">${t.label?`<span class="tag">${esc(t.label)}</span>`:""}<span class="tag ${priority}">${({low:"Niedrig",normal:"Normal",high:"Hoch"})[priority]}</span>${t.due?`<span class="date ${overdue?"overdue":""}">${new Date(t.due+"T12:00:00").toLocaleDateString("de-DE")}</span>`:""}</div></article>`}
+function bindBoard(){
+ document.querySelectorAll(".add-task").forEach(b=>b.onclick=()=>openTask(null,b.closest(".column").dataset.column));
+ document.querySelectorAll(".edit-col").forEach(b=>b.onclick=()=>openColumn(b.closest(".column").dataset.column));
+ document.querySelectorAll(".task").forEach(el=>{el.onclick=()=>openTask(el.dataset.task);el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openTask(el.dataset.task)}};el.ondragstart=e=>{draggedTask=el.dataset.task;el.classList.add("dragging");e.stopPropagation()};el.ondragend=()=>{draggedTask=null;el.classList.remove("dragging")}});
+ document.querySelectorAll(".column").forEach(el=>{el.ondragstart=e=>{if(draggedTask||hasActiveFilters()){e.preventDefault();return}draggedColumn=el.dataset.column};el.ondragend=()=>draggedColumn=null;el.ondragover=e=>{if(hasActiveFilters())return;e.preventDefault();el.classList.add("drag-over")};el.ondragleave=()=>el.classList.remove("drag-over");el.ondrop=e=>{e.preventDefault();el.classList.remove("drag-over");if(hasActiveFilters())return;const p=project();let changed=false;if(draggedTask){const cards=[...el.querySelectorAll(".task")].filter(x=>x.dataset.task!==draggedTask),before=cards.find(x=>e.clientY<x.getBoundingClientRect().top+x.getBoundingClientRect().height/2),index=before?cards.indexOf(before):cards.length;changed=reorderTask(p,draggedTask,el.dataset.column,index)}else if(draggedColumn&&draggedColumn!==el.dataset.column){const from=p.columns.findIndex(c=>c.id===draggedColumn),to=p.columns.findIndex(c=>c.id===el.dataset.column);p.columns.splice(to,0,p.columns.splice(from,1)[0]);changed=true}draggedTask=null;draggedColumn=null;if(changed){save();render()}}});
+ $("#inlineColumn").onclick=()=>openColumn();
+}
+function fillColumns(selected){$("#taskColumn").innerHTML=project().columns.map(c=>`<option value="${esc(c.id)}" ${c.id===selected?"selected":""}>${esc(c.name)}</option>`).join("")}
+function openTask(id,columnId){const t=project().tasks.find(x=>x.id===id);$("#taskId").value=t?.id||"";$("#taskTitle").value=t?.title||"";$("#taskDescription").value=t?.description||"";$("#taskPriority").value=t?.priority||"normal";$("#taskDue").value=t?.due||"";$("#taskLabel").value=t?.label||"";fillColumns(t?.columnId||columnId||project().columns[0].id);$("#deleteTask").style.display=t?"inline-block":"none";$("#taskDialogTitle").textContent=t?"Aufgabe bearbeiten":"Neue Aufgabe";$("#taskDialog").showModal();setTimeout(()=>$("#taskTitle").focus(),50)}
+function openProject(id){const p=state.projects.find(x=>x.id===id);$("#projectId").value=p?.id||"";$("#projectName").value=p?.name||"";$("#projectDesc").value=p?.description||"";$("#projectGoal").value=p?.goal||"";$("#deleteProject").style.display=state.projects.length>1&&p?"inline-block":"none";$("#projectDialog").showModal()}
+function openColumn(id){const c=project().columns.find(x=>x.id===id);$("#columnId").value=c?.id||"";$("#columnName").value=c?.name||"";$("#columnDone").value=String(c?.done||false);$("#deleteColumn").style.display=project().columns.length>1&&c?"inline-block":"none";$("#columnDialog").showModal()}
+$("#taskForm").onsubmit=e=>{e.preventDefault();const p=project(),id=$("#taskId").value,t=p.tasks.find(x=>x.id===id),data={title:$("#taskTitle").value.trim(),description:$("#taskDescription").value.trim(),columnId:$("#taskColumn").value,priority:$("#taskPriority").value,due:$("#taskDue").value,label:$("#taskLabel").value.trim()};if(t){if(t.columnId!==data.columnId)data.order=nextTaskOrder(p,data.columnId);Object.assign(t,data)}else p.tasks.push({id:uid(),order:nextTaskOrder(p,data.columnId),...data});closeAll();save();render()};
+$("#projectForm").onsubmit=e=>{e.preventDefault();const id=$("#projectId").value,p=state.projects.find(x=>x.id===id),data={name:$("#projectName").value.trim(),description:$("#projectDesc").value.trim(),goal:$("#projectGoal").value.trim()};if(p)Object.assign(p,data);else{const np={id:uid(),...data,columns:[{id:uid(),name:"Ideen",done:false},{id:uid(),name:"Noch zu erledigen",done:false},{id:uid(),name:"In Arbeit",done:false},{id:uid(),name:"Erledigt",done:true}],tasks:[]};state.projects.push(np);state.active=np.id}closeAll();save();render()};
+$("#columnForm").onsubmit=e=>{e.preventDefault();const p=project(),id=$("#columnId").value,c=p.columns.find(x=>x.id===id),data={name:$("#columnName").value.trim(),done:$("#columnDone").value==="true"};c?Object.assign(c,data):p.columns.push({id:uid(),...data});closeAll();save();render()};
+$("#deleteTask").onclick=()=>{if(confirm("Aufgabe in den Papierkorb verschieben?")){const p=project(),id=$("#taskId").value,t=p.tasks.find(x=>x.id===id),item=trashItem("task",t,{projectId:p.id,order:t.order});lastUndoId=item.id;p.tasks=p.tasks.filter(x=>x.id!==id);closeAll();save();render();toast("Aufgabe in den Papierkorb verschoben",()=>restoreTrash(item.id))}};
+$("#deleteProject").onclick=()=>{if(confirm("Projekt samt Aufgaben in den Papierkorb verschieben?")){const id=$("#projectId").value,p=state.projects.find(x=>x.id===id),item=trashItem("project",p,{index:state.projects.indexOf(p)});lastUndoId=item.id;state.projects=state.projects.filter(x=>x.id!==id);state.active=state.projects[0].id;closeAll();save();render();toast("Projekt in den Papierkorb verschoben",()=>restoreTrash(item.id))}};
+$("#deleteColumn").onclick=()=>{const p=project(),id=$("#columnId").value,c=p.columns.find(x=>x.id===id);if(confirm("Spalte samt enthaltenen Aufgaben in den Papierkorb verschieben?")){const tasks=p.tasks.filter(t=>t.columnId===id),item=trashItem("column",{column:c,tasks},{projectId:p.id,index:p.columns.indexOf(c)});lastUndoId=item.id;p.columns=p.columns.filter(x=>x.id!==id);p.tasks=p.tasks.filter(t=>t.columnId!==id);closeAll();save();render();toast("Spalte in den Papierkorb verschoben",()=>restoreTrash(item.id))}};
+$("#projects").onclick=e=>{const b=e.target.closest("[data-project]");if(b){if(projectDragMoved){projectDragMoved=false;return}state.active=b.dataset.project;query="";$("#search").value="";filters={priority:"",label:"",due:""};save();render();$("#sidebar").classList.remove("open")}};
+$("#search").oninput=e=>{query=e.target.value.trim().toLowerCase();render()};["priority","label","due"].forEach(name=>$(`#${name}Filter`).onchange=e=>{filters[name]=e.target.value;render()});$("#clearFilters").onclick=()=>{query="";$("#search").value="";filters={priority:"",label:"",due:""};render()};$("#newProject").onclick=()=>openProject();$("#editProject").onclick=()=>openProject(project().id);$("#newTask").onclick=()=>openTask();$("#newColumn").onclick=()=>openColumn();$("#menuBtn").onclick=()=>$("#sidebar").classList.toggle("open");
+$("#syncBtn").onclick=()=>{$("#authMessage").textContent="";$("#authDialog").showModal()};$("#syncNowBtn").onclick=async()=>{if(cloudConflict)await resolveCloudConflict();else if(cloudDirty)await pushCloud();else await pullCloud()};$("#logoutBtn").onclick=logoutCloud;
+$("#trashBtn").onclick=()=>{renderTrash();$("#trashDialog").showModal()};$("#emptyTrash").onclick=()=>{if(state.trash.length&&confirm("Papierkorb wirklich endgültig leeren?")){state.trash=[];save();render();renderTrash()}};
+$("#backupBtn").onclick=()=>$("#backupDialog").showModal();
+$("#authForm").onsubmit=e=>{e.preventDefault();authenticate("login")};$("#signupBtn").onclick=()=>authenticate("signup");
+document.querySelectorAll(".close").forEach(b=>b.onclick=closeAll);function closeAll(){document.querySelectorAll("dialog[open]").forEach(d=>d.close())}
+$("#exportBtn").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));a.download=`projektboard-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href)};
+$("#importBtn").onclick=()=>$("#importFile").click();$("#importFile").onchange=async e=>{try{const data=JSON.parse(await e.target.files[0].text());if(!data.projects?.length)throw Error();state=normalizeState(data);save();render()}catch{alert("Dieses Backup konnte nicht gelesen werden.")}};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"&&lastUndoId){e.preventDefault();restoreTrash(lastUndoId)}if(e.key==="/"&&!document.querySelector("dialog[open]")){e.preventDefault();$("#search").focus()}if(e.key.toLowerCase()==="n"&&!["INPUT","TEXTAREA","SELECT"].includes(document.activeElement.tagName)&&!document.querySelector("dialog[open]"))openTask()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&cloudDirty)pushCloud()});
+window.addEventListener("beforeunload",e=>{if(cloudDirty){pushCloud();e.preventDefault()}});
+function toast(text,action=null){const el=$("#toast"),btn=$("#toastAction");if(!action&&!btn.hidden)return;$("#toastText").textContent=text;btn.hidden=!action;btn.onclick=()=>{action?.();btn.hidden=true;el.classList.remove("show")};el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>{btn.hidden=true;el.classList.remove("show")},action?6000:1600)}
+render();restoreCloud();setInterval(()=>pullCloud(false),10000);
+if("serviceWorker" in navigator&&location.protocol!=="file:")navigator.serviceWorker.register("./sw.js").catch(()=>{});
+</script>
+</body>
+</html>
