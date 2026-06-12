@@ -1,4 +1,4 @@
-const CACHE_NAME = "projektboard-v9";
+const CACHE_NAME = "projektboard-v10";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/projektboard-192.png", "./icons/projektboard-512.png"];
 const CACHEABLE_DESTINATIONS = new Set([
   "document",
