@@ -36,4 +36,7 @@ const remoteChanged = structuredClone(base);
 remoteChanged.projects[0].tasks[0].description = "Auf dem iPhone ergänzt";
 assert.equal(mergeStates(base, desktopDelete, remoteChanged).projects[0].tasks[0].description, "Auf dem iPhone ergänzt");
 
+const missingBaseMerge = mergeStates({}, desktop, iphone);
+assert.deepEqual(new Set(missingBaseMerge.projects[0].tasks.map((task) => task.id)), new Set(["a", "d", "i"]));
+
 console.log("sync-core tests passed");

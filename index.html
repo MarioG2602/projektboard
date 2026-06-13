@@ -256,9 +256,8 @@ async function autoMergeCloudConflict(localState){
 }
 async function resolveCloudConflict(){
  if(!cloudConflict)return;
- const useCloud=confirm("Mehrere Geräte haben gleichzeitig Änderungen gespeichert.\n\nOK: Cloud-Stand laden\nAbbrechen: Lokalen Stand übernehmen\n\nBeide Versionen werden vorher automatisch gesichert.");
- if(useCloud){await pullCloud(false,true);return}
- try{const rows=await cloudRequest(`/rest/v1/projectboard_data?select=board_data,revision,updated_at&user_id=eq.${cloudSession.user.id}`),remote=rows?.[0];if(remote?.board_data)safetySnapshotState("Cloud-Stand vor Konfliktüberschreibung",remote.board_data);safetySnapshot("Lokaler Stand vor Konfliktüberschreibung");cloudRevision=remote?.revision||null;cloudConflict=false;cloudDirty=true;cloudChangeId++;await pushCloud();if(!cloudConflict)toast("Lokaler Stand übernommen; beide Versionen wurden gesichert")}catch{setSyncStatus("Konflikt konnte nicht gelöst werden","error")}
+ setSyncStatus("Änderungen werden automatisch zusammengeführt ...","wait");
+ try{await autoMergeCloudConflict(structuredClone(state));if(!cloudConflict){await pushCloud();toast("Änderungen beider Geräte wurden zusammengeführt")}}catch{cloudConflict=true;setSyncStatus("Konflikt konnte nicht automatisch gelöst werden","error","Beide Versionen bleiben lokal gesichert")}
 }
 async function restoreCloud(){if(!cloudSession?.access_token)return;setSyncStatus("Cloud wird verbunden ...","wait");try{const data=await cloudRequest("/auth/v1/user");cloudSession.user=data;storeCloudSession(cloudSession);if(cloudDirty){cloudConflict=false;setSyncStatus("Lokale Änderungen werden synchronisiert ...","wait");await pushCloud()}else await pullCloud(true)}catch(e){if(e.status===401||e.status===403){storeCloudSession(null);setSyncStatus("Bitte erneut anmelden","wait")}else setSyncStatus(navigator.onLine?"Cloud vorübergehend nicht erreichbar":"Offline - lokal verfügbar","error","Du bleibst angemeldet; später wird automatisch erneut versucht")}}
 async function logoutCloud(){try{await cloudRequest("/auth/v1/logout",{method:"POST"})}catch{}storeCloudSession(null);setSyncStatus("Nicht angemeldet");toast("Abgemeldet")}
