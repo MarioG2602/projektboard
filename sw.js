@@ -1,5 +1,5 @@
-const CACHE_NAME = "projektboard-v14";
-const APP_SHELL = ["./", "./index.html", "./data-core.js", "./manifest.webmanifest", "./icons/projektboard-192.png", "./icons/projektboard-512.png"];
+const CACHE_NAME = "projektboard-v15";
+const APP_SHELL = ["./", "./index.html", "./data-core.js", "./sync-core.js", "./manifest.webmanifest", "./icons/projektboard-192.png", "./icons/projektboard-512.png"];
 const CACHEABLE_DESTINATIONS = new Set([
   "document",
   "style",

@@ -6,6 +6,10 @@
 
 Der Test prüft Datenmigration, doppelte IDs, verwaiste Aufgaben, ungültige Felder, leere Datenstände und Größenbegrenzungen.
 
+`node sync-core.test.js`
+
+Der Test prüft die automatische Zusammenführung gleichzeitiger Desktop- und Mobiländerungen sowie Löschkonflikte.
+
 ## Vorbereitung
 
 - `index.html` unter Windows und Mac jeweils in Chrome oder Edge öffnen.

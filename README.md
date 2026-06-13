@@ -37,7 +37,7 @@ Das aktuelle SQL-Skript erlaubt der App nur Lesezugriff auf die Haupttabelle. Sc
 
 Änderungen werden automatisch in Supabase gespeichert und etwa alle zehn Sekunden auf anderen geöffneten Geräten eingelesen. Lokal bleibt zusätzlich eine Offline-Kopie erhalten.
 
-Wenn Windows und Mac denselben älteren Stand gleichzeitig ändern, stoppt die App vor dem Überschreiben und fordert zur Konfliktauflösung auf.
+Wenn mehrere Geräte gleichzeitig unterschiedliche Aufgaben, Projekte oder Spalten ändern, führt die App die Änderungen automatisch zusammen. Vor jeder Zusammenführung werden beide Stände zusätzlich gesichert.
 
 Während eine Suche oder ein Filter aktiv ist, wird Drag-and-drop bewusst deaktiviert, damit ausgeblendete Aufgaben nicht versehentlich umsortiert werden.
 
@@ -52,3 +52,5 @@ Die Veröffentlichung über GitHub Pages und die nötigen Supabase-Weiterleitung
 Mit installiertem Node.js:
 
 `node data-core.test.js`
+
+`node sync-core.test.js`
