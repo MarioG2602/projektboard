@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 const { mergeStates } = require("./sync-core.js");
+const { validateState } = require("./data-core.js");
 
 const base = {
   schemaVersion: 2,
@@ -38,5 +39,22 @@ assert.equal(mergeStates(base, desktopDelete, remoteChanged).projects[0].tasks[0
 
 const missingBaseMerge = mergeStates({}, desktop, iphone);
 assert.deepEqual(new Set(missingBaseMerge.projects[0].tasks.map((task) => task.id)), new Set(["a", "d", "i"]));
+
+const hierarchyBase = {
+  schemaVersion: 2,
+  active: "a",
+  projects: [
+    { id: "a", name: "A", parentId: "", columns: [{ id: "ca", name: "Offen" }], tasks: [{ id: "ta", title: "Task A", columnId: "ca", order: 1000 }] },
+    { id: "b", name: "B", parentId: "", columns: [{ id: "cb", name: "Offen" }], tasks: [{ id: "tb", title: "Task B", columnId: "cb", order: 1000 }] },
+  ],
+  trash: [],
+};
+const hierarchyDesktop = structuredClone(hierarchyBase);
+hierarchyDesktop.projects[0].parentId = "b";
+const hierarchyIphone = structuredClone(hierarchyBase);
+hierarchyIphone.projects[1].parentId = "a";
+const hierarchyMerged = validateState(mergeStates(hierarchyBase, hierarchyDesktop, hierarchyIphone), hierarchyBase).state;
+assert.deepEqual(new Set(hierarchyMerged.projects.flatMap((project) => project.tasks.map((task) => task.id))), new Set(["ta", "tb"]));
+assert.ok(!hierarchyMerged.projects.every((project) => project.parentId));
 
 console.log("sync-core tests passed");
