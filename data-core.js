@@ -75,6 +75,7 @@
       }
       return {
         id: projectId,
+        parentId: text(raw.parentId, 100),
         name: requiredText(raw.name, 50, `Projekt ${projectIndex + 1}`),
         description: text(raw.description, 120),
         goal: text(raw.goal, 160),
@@ -110,6 +111,21 @@
     }
 
     const projectIds = new Set(projects.map((project) => project.id));
+    const wouldCreateProjectCycle = (projectId, parentId) => {
+      const seen = new Set([projectId]);
+      let cursor = parentId;
+      while (cursor) {
+        if (seen.has(cursor)) return true;
+        seen.add(cursor);
+        cursor = projects.find((project) => project.id === cursor)?.parentId || "";
+      }
+      return false;
+    };
+    for (const project of projects) {
+      if (!projectIds.has(project.parentId) || project.parentId === project.id || wouldCreateProjectCycle(project.id, project.parentId)) {
+        project.parentId = "";
+      }
+    }
     const active = projectIds.has(source.active) ? source.active : projects[0].id;
     const trash = Array.isArray(source.trash)
       ? source.trash.filter((item) => item && typeof item === "object").slice(0, 1000)

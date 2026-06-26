@@ -54,4 +54,23 @@ assert.equal(emptyTitles.projects[0].name, "Projekt 1");
 assert.equal(emptyTitles.projects[0].columns[0].name, "Spalte 1");
 assert.equal(emptyTitles.projects[0].tasks[0].title, "Aufgabe 1");
 
+const nestedProjects = validateState({
+  projects: [
+    { id: "weg", name: "WEG", columns: [{ id: "c1", name: "Offen" }], tasks: [] },
+    { id: "weg-a", parentId: "weg", name: "WEG A", columns: [{ id: "c2", name: "Offen" }], tasks: [] },
+    { id: "orphan", parentId: "missing", name: "Verwaist", columns: [{ id: "c3", name: "Offen" }], tasks: [] },
+  ],
+}, fallback).state;
+assert.equal(nestedProjects.projects[1].parentId, "weg");
+assert.equal(nestedProjects.projects[2].parentId, "");
+
+const cyclicProjects = validateState({
+  projects: [
+    { id: "a", parentId: "b", name: "A", columns: [{ id: "ca", name: "Offen" }], tasks: [] },
+    { id: "b", parentId: "a", name: "B", columns: [{ id: "cb", name: "Offen" }], tasks: [] },
+  ],
+}, fallback).state;
+assert.equal(cyclicProjects.projects[0].parentId, "");
+assert.equal(cyclicProjects.projects[1].parentId, "a");
+
 console.log("data-core tests passed");
